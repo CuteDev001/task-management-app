@@ -13,8 +13,11 @@ interface TaskCardProps {
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [noteContent, setNoteContent] = useState('')
   const updateTask = useTaskStore((state) => state.updateTask)
   const deleteTask = useTaskStore((state) => state.deleteTask)
+  const addTaskNote = useTaskStore((state) => state.addTaskNote)
+  const markTaskDone = useTaskStore((state) => state.markTaskDone)
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateTask(task.id!, { status: e.target.value as Task['status'] })
@@ -24,6 +27,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
     if (confirm('Are you sure you want to delete this task?')) {
       deleteTask(task.id!)
     }
+  }
+
+  const handleAddNote = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!noteContent.trim()) return
+    addTaskNote(task.id!, noteContent.trim())
+    setNoteContent('')
   }
 
   const getPriorityColor = (priority: Task['priority']) => {
@@ -108,6 +118,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
             <option value="Done">Done</option>
           </select>
           <button
+            onClick={() => markTaskDone(task.id!)}
+            className="p-1 text-gray-400 hover:text-emerald-600 transition-colors"
+            title="Mark Done"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 011.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <button
             onClick={handleDelete}
             className="p-1 text-gray-400 hover:text-red-500 transition-colors"
           >
@@ -139,6 +158,35 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
               </span>
             </div>
             <SubTaskList task={task} />
+          </div>
+
+          <div className="mt-4 pt-4 border-t">
+            <h4 className="font-medium text-gray-900 mb-2">Notes & Memos</h4>
+            <form onSubmit={handleAddNote} className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                placeholder="Add a quick note..."
+                className="flex-1 rounded-md border-gray-300 shadow-sm text-sm focus:border-emerald-500 focus:ring-emerald-500"
+              />
+              <button
+                type="submit"
+                className="px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              >
+                Add
+              </button>
+            </form>
+            <ul className="space-y-2">
+              {(task.notes ?? []).map((n) => (
+                <li key={n.id} className="text-sm text-gray-700 bg-gray-50 rounded-md p-2 border">
+                  <div className="whitespace-pre-wrap">{n.content}</div>
+                </li>
+              ))}
+              {(task.notes ?? []).length === 0 && (
+                <li className="text-sm text-gray-500">No notes yet.</li>
+              )}
+            </ul>
           </div>
         </>
       )}
