@@ -13,6 +13,10 @@ import { UserGreeting } from "./components/UserGreeting"
 import { Login } from './components/Login'
 import { Register } from './components/Register'
 import { Profile } from './components/Profile'
+import { DailyProgressView } from './components/DailyProgressView'
+import { WeeklyPlanner } from './components/WeeklyPlanner'
+import { MonthlyReport } from './components/MonthlyReport'
+import { OngoingTasks } from './components/OngoingTasks'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -139,6 +143,10 @@ function AppContent() {
           <div className="space-y-6">
             <WeatherWidget />
             <TaskOverview />
+            <DailyProgressView />
+            <WeeklyPlanner />
+            <MonthlyReport />
+            <OngoingTasks />
           </div>
         </div>
       </main>

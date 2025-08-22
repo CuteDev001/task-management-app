@@ -1,12 +1,11 @@
 import type React from "react"
 import { useTaskStore } from "../store/taskStore"
-import { Priority } from "../types"
 
 export const TaskOverview: React.FC = () => {
   const tasks = useTaskStore((state) => state.tasks)
-  const completedTasks = tasks.filter((task) => task.completed).length
-  const highPriorityTasks = tasks.filter((task) => task.priority === Priority.HIGH).length
-  const efficiency = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0
+  const completedTasks = tasks.filter((task) => task.status === 'Done').length
+  const highPriorityTasks = tasks.filter((task) => task.priority === 'High').length
+  const efficiency = tasks.length > 0 ? Math.round(tasks.reduce((acc, t) => acc + (t.progress ?? 0), 0) / tasks.length) : 0
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
@@ -87,8 +86,8 @@ export const TaskOverview: React.FC = () => {
                 ),
               },
               {
-                label: "Efficiency",
-                value: `${Math.round(efficiency)}%`,
+                label: "Avg Progress",
+                value: `${efficiency}%`,
                 icon: (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
