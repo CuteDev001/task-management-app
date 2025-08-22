@@ -3,6 +3,7 @@ import {
   User,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   AuthError
@@ -12,6 +13,7 @@ import { auth } from '../lib/firebase'
 type AuthContextType = {
   user: User | null
   loading: boolean
+  signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
@@ -19,6 +21,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  signIn: async () => {},
   signInWithGoogle: async () => {},
   signOut: async () => {},
 })
@@ -37,6 +40,14 @@ const getAuthErrorMessage = (error: AuthError) => {
       return 'Google sign-in is not enabled. Please contact support.'
     case 'auth/user-disabled':
       return 'This account has been disabled. Please contact support.'
+    case 'auth/user-not-found':
+      return 'No account found with this email address.'
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.'
+    case 'auth/invalid-email':
+      return 'Invalid email address.'
+    case 'auth/weak-password':
+      return 'Password is too weak. Please choose a stronger password.'
     default:
       return error.message || 'An unexpected error occurred. Please try again.'
   }
@@ -54,6 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return unsubscribe
   }, [])
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(getAuthErrorMessage(error as AuthError))
+      }
+      throw error
+    }
+  }
 
   const signInWithGoogle = async () => {
     try {
@@ -83,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         loading,
+        signIn,
         signInWithGoogle,
         signOut,
       }}
