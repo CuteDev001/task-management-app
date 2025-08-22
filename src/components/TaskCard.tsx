@@ -4,7 +4,13 @@ import React, { useState } from 'react'
 import { format } from 'date-fns'
 import { useTaskStore } from '../store/taskStore'
 import { SubTaskList } from './SubTaskList'
-import { Progress } from './ui/Progress'
+import { Progress } from './ui/progress'
+import { Button } from './ui/button'
+import { Badge } from './ui/badge'
+import { Card, CardContent, CardHeader } from './ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Input } from './ui/input'
+import { ChevronDown, ChevronUp, Check, Trash2, Plus, MessageSquare } from 'lucide-react'
 import type { Task } from '../types/task'
 
 interface TaskCardProps {
@@ -19,8 +25,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   const addTaskNote = useTaskStore((state) => state.addTaskNote)
   const markTaskDone = useTaskStore((state) => state.markTaskDone)
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateTask(task.id!, { status: e.target.value as Task['status'] })
+  const handleStatusChange = (value: string) => {
+    updateTask(task.id!, { status: value as Task['status'] })
   }
 
   const handleDelete = () => {
@@ -36,160 +42,134 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
     setNoteContent('')
   }
 
-  const getPriorityColor = (priority: Task['priority']) => {
+  const getPriorityVariant = (priority: Task['priority']) => {
     switch (priority) {
       case 'High':
-        return 'bg-red-100 text-red-800'
+        return 'destructive'
       case 'Medium':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'secondary'
       case 'Low':
-        return 'bg-green-100 text-green-800'
+        return 'outline'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'outline'
     }
   }
 
   return (
-    <div 
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow ${
-        isExpanded ? 'ring-2 ring-emerald-500 ring-opacity-50' : ''
-      }`}
-    >
-      <div className="flex items-start justify-between">
-        <div 
-          className="space-y-1 flex-1 cursor-pointer"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-gray-900">{task.title}</h3>
-            <button
-              className={`p-1 rounded-full hover:bg-gray-100 transition-colors ${
-                isExpanded ? 'rotate-180' : ''
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-          </div>
-          {task.description && (
-            <p className="text-sm text-gray-500">{task.description}</p>
-          )}
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>
-              {format(new Date(task.startDate), 'MMM d')} -{' '}
-              {format(new Date(task.endDate), 'MMM d, yyyy')}
-            </span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                task.priority
-              )}`}
-            >
-              {task.priority}
-            </span>
-          </div>
-          <div className="pt-2">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-sm font-medium text-gray-700">Progress</span>
-              <span className="text-sm font-medium text-gray-500">{task.progress}%</span>
+    <Card className={`transition-all duration-200 hover:shadow-md ${
+      isExpanded ? 'ring-2 ring-ring ring-opacity-50' : ''
+    }`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div 
+            className="space-y-2 flex-1 cursor-pointer"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-lg">{task.title}</h3>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
             </div>
-            <Progress value={task.progress} />
+            {task.description && (
+              <p className="text-muted-foreground text-sm">{task.description}</p>
+            )}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>
+                {format(new Date(task.startDate), 'MMM d')} -{' '}
+                {format(new Date(task.endDate), 'MMM d, yyyy')}
+              </span>
+              <Badge variant={getPriorityVariant(task.priority)}>
+                {task.priority}
+              </Badge>
+            </div>
+            <div className="pt-2">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Progress</span>
+                <span className="text-sm text-muted-foreground">{task.progress}%</span>
+              </div>
+              <Progress value={task.progress} className="h-2" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={task.status} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todo">To Do</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Done">Done</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => markTaskDone(task.id!)}
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDelete}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={task.status}
-            onChange={handleStatusChange}
-            className="text-sm rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
-          >
-            <option value="Todo">To Do</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Done">Done</option>
-          </select>
-          <button
-            onClick={() => markTaskDone(task.id!)}
-            className="p-1 text-gray-400 hover:text-emerald-600 transition-colors"
-            title="Mark Done"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 011.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <button
-            onClick={handleDelete}
-            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
+      </CardHeader>
 
       {isExpanded && (
-        <>
-          <div className="mt-4 pt-4 border-t">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900">Subtasks</h4>
-              <span className="text-sm text-gray-500">
-                {task.subtasks.filter((st) => st.completed).length} of {task.subtasks.length} completed
-              </span>
+        <CardContent className="pt-0">
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Subtasks
+                </h4>
+                <span className="text-sm text-muted-foreground">
+                  {task.subtasks.filter((st) => st.completed).length} of {task.subtasks.length} completed
+                </span>
+              </div>
+              <SubTaskList task={task} />
             </div>
-            <SubTaskList task={task} />
-          </div>
 
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="font-medium text-gray-900 mb-2">Notes & Memos</h4>
-            <form onSubmit={handleAddNote} className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={noteContent}
-                onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Add a quick note..."
-                className="flex-1 rounded-md border-gray-300 shadow-sm text-sm focus:border-emerald-500 focus:ring-emerald-500"
-              />
-              <button
-                type="submit"
-                className="px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-              >
-                Add
-              </button>
-            </form>
-            <ul className="space-y-2">
-              {(task.notes ?? []).map((n) => (
-                <li key={n.id} className="text-sm text-gray-700 bg-gray-50 rounded-md p-2 border">
-                  <div className="whitespace-pre-wrap">{n.content}</div>
-                </li>
-              ))}
-              {(task.notes ?? []).length === 0 && (
-                <li className="text-sm text-gray-500">No notes yet.</li>
-              )}
-            </ul>
+            <div>
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Notes & Memos
+              </h4>
+              <form onSubmit={handleAddNote} className="flex gap-2 mb-3">
+                <Input
+                  value={noteContent}
+                  onChange={(e) => setNoteContent(e.target.value)}
+                  placeholder="Add a quick note..."
+                  className="flex-1"
+                />
+                <Button type="submit" size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </form>
+              <div className="space-y-2">
+                {(task.notes ?? []).map((n) => (
+                  <div key={n.id} className="text-sm bg-muted rounded-md p-3 border">
+                    <div className="whitespace-pre-wrap">{n.content}</div>
+                  </div>
+                ))}
+                {(task.notes ?? []).length === 0 && (
+                  <div className="text-sm text-muted-foreground text-center py-4">
+                    No notes yet.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </>
+        </CardContent>
       )}
-    </div>
+    </Card>
   )
 }

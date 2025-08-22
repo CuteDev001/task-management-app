@@ -4,6 +4,12 @@ import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useTaskStore } from '../store/taskStore'
 import type { Task } from '../types/task'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Textarea } from './ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { X } from 'lucide-react'
 
 interface TaskFormProps {
   isOpen: boolean
@@ -43,7 +49,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose }) => {
         ...formData,
         userId: user.uid,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        subtasks: [],
+        progress: 0
       }
 
       addTask(task)
@@ -58,7 +66,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose }) => {
   }
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target
     
@@ -76,6 +84,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose }) => {
     }))
   }
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
   const handleClose = () => {
     setFormData(initialFormState) // Reset form when closing
     onClose()
@@ -84,136 +99,123 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Create New Task</h3>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              required
-              value={formData.title}
-              onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-              placeholder="Enter task title"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-              placeholder="Enter task description"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+      <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
-                Start Date
-              </label>
-              <input
-                type="date"
-                id="startDate"
-                name="startDate"
-                required
-                value={formData.startDate.toISOString().split('T')[0]}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-              />
+              <CardTitle>Create New Task</CardTitle>
+              <CardDescription>Add a new task to your workspace</CardDescription>
             </div>
+            <Button variant="ghost" size="icon" onClick={handleClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Title
+                </label>
+                <Input
+                  id="title"
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Enter task title"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
-                End Date
-              </label>
-              <input
-                type="date"
-                id="endDate"
-                name="endDate"
-                required
-                value={formData.endDate.toISOString().split('T')[0]}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-              />
-            </div>
-          </div>
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Description
+                </label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Enter task description"
+                  rows={3}
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
-                Priority
-              </label>
-              <select
-                id="priority"
-                name="priority"
-                value={formData.priority}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="startDate" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Start Date
+                  </label>
+                  <Input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    required
+                    value={formData.startDate.toISOString().split('T')[0]}
+                    onChange={handleInputChange}
+                  />
+                </div>
 
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-              >
-                <option value="Todo">To Do</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Done">Done</option>
-              </select>
-            </div>
-          </div>
+                <div className="space-y-2">
+                  <label htmlFor="endDate" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    End Date
+                  </label>
+                  <Input
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    required
+                    value={formData.endDate.toISOString().split('T')[0]}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-            >
-              Create Task
-            </button>
-          </div>
-        </form>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Priority
+                  </label>
+                  <Select value={formData.priority} onValueChange={(value) => handleSelectChange('priority', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Low">Low</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="High">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Status
+                  </label>
+                  <Select value={formData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todo">To Do</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Create Task
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

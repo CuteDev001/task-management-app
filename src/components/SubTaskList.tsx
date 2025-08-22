@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react'
 import { useTaskStore } from '../store/taskStore'
-import type { Task, SubTask } from '../types/task'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Card } from './ui/card'
+import { Checkbox } from './ui/checkbox'
+import { Plus, X } from 'lucide-react'
+import type { Task } from '../types/task'
 
 interface SubTaskListProps {
   task: Task
@@ -39,63 +44,43 @@ export const SubTaskList: React.FC<SubTaskListProps> = ({ task }) => {
   }
 
   return (
-    <div className="mt-4 space-y-4">
+    <div className="space-y-4">
       <form onSubmit={handleAddSubTask} className="flex gap-2">
-        <input
-          type="text"
+        <Input
           value={newSubTask}
           onChange={(e) => setNewSubTask(e.target.value)}
           placeholder="Add a subtask..."
-          className="flex-1 rounded-md border-gray-300 shadow-sm text-sm focus:border-emerald-500 focus:ring-emerald-500"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          className="px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-        >
-          Add
-        </button>
+        <Button type="submit" size="sm">
+          <Plus className="h-4 w-4" />
+        </Button>
       </form>
 
-      <ul className="space-y-2">
+      <div className="space-y-2">
         {task.subtasks.map((subtask) => (
-          <li
-            key={subtask.id}
-            className="rounded-md border border-gray-200 p-2 hover:bg-gray-50"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+          <Card key={subtask.id} className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1">
+                <Checkbox
                   checked={subtask.completed}
-                  onChange={() => handleToggleComplete(subtask.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  onCheckedChange={() => handleToggleComplete(subtask.id)}
                 />
-                <span className={subtask.completed ? "line-through text-gray-500" : ""}>
+                <span className={subtask.completed ? "line-through text-muted-foreground" : "font-medium"}>
                   {subtask.title}
                 </span>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => handleDeleteSubTask(subtask.id)}
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
 
-            <div className="mt-2">
+            <div className="mt-3">
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
@@ -103,33 +88,37 @@ export const SubTaskList: React.FC<SubTaskListProps> = ({ task }) => {
                 }}
                 className="flex gap-2"
               >
-                <input
-                  type="text"
+                <Input
                   value={noteDrafts[subtask.id] || ''}
                   onChange={(e) => setNoteDrafts((prev) => ({ ...prev, [subtask.id]: e.target.value }))}
                   placeholder="Add note to this subtask..."
-                  className="flex-1 rounded-md border-gray-300 shadow-sm text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                  className="flex-1 text-sm"
                 />
-                <button
-                  type="submit"
-                  className="px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                >
-                  Add
-                </button>
+                <Button type="submit" size="sm">
+                  <Plus className="h-3 w-3" />
+                </Button>
               </form>
-              <ul className="mt-2 space-y-1">
+              <div className="mt-2 space-y-1">
                 {(subtask.notes ?? []).map((n) => (
-                  <li key={n.id} className="text-xs text-gray-700 bg-gray-50 rounded-md p-2 border">
+                  <div key={n.id} className="text-xs bg-muted/50 rounded-md p-2 border">
                     <div className="whitespace-pre-wrap">{n.content}</div>
-                  </li>) )}
+                  </div>
+                ))}
                 {(subtask.notes ?? []).length === 0 && (
-                  <li className="text-xs text-gray-500">No notes yet.</li>
+                  <div className="text-xs text-muted-foreground text-center py-2">
+                    No notes yet.
+                  </div>
                 )}
-              </ul>
+              </div>
             </div>
-          </li>
+          </Card>
         ))}
-      </ul>
+        {task.subtasks.length === 0 && (
+          <div className="text-center py-4 text-muted-foreground">
+            No subtasks yet. Add one to get started!
+          </div>
+        )}
+      </div>
     </div>
   )
 }

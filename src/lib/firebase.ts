@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore, enableIndexedDbPersistence, initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore'
+import { enableIndexedDbPersistence, initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 import { getAnalytics } from 'firebase/analytics'
 

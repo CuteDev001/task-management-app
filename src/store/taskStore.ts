@@ -150,11 +150,11 @@ export const useTaskStore = create<TaskState>()(
         const task = state.tasks.find((t) => t.id === taskId)
         if (!task) return { tasks: state.tasks }
         const updatedTasks = state.tasks.map((t) =>
-          t.id === taskId ? { ...t, status: 'Done', progress: 100, updatedAt: new Date() } : t
+          t.id === taskId ? { ...t, status: 'Done' as const, progress: 100, updatedAt: new Date() } : t
         )
         const historyEntry: TaskHistoryEntry = {
           id: crypto.randomUUID(),
-          task: { ...task, status: 'Done', progress: 100 },
+          task: { ...task, status: 'Done' as const, progress: 100 },
           completedAt: new Date(),
         }
         return { tasks: updatedTasks, completedHistory: [...state.completedHistory, historyEntry] }

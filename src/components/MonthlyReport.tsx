@@ -3,6 +3,9 @@
 import React, { useMemo } from 'react'
 import { useTaskStore } from '../store/taskStore'
 import { startOfMonth, endOfMonth, startOfWeek, addDays, isWithinInterval, format } from 'date-fns'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Progress } from './ui/progress'
+import { Calendar, BarChart3 } from 'lucide-react'
 
 export const MonthlyReport: React.FC = () => {
 	const tasks = useTaskStore((s) => s.tasks)
@@ -27,21 +30,29 @@ export const MonthlyReport: React.FC = () => {
 	}, [tasks, mStart.getTime(), mEnd.getTime()])
 
 	return (
-		<div className="bg-white rounded-lg p-6 shadow-md border border-gray-100">
-			<h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Report</h3>
-			<div className="space-y-3">
-				{weeks.map((w) => (
-					<div key={w.label} className="border rounded-md p-3">
-						<div className="flex justify-between text-sm text-gray-700 mb-1">
-							<span className="font-medium">{w.label}</span>
-							<span>{w.tasks} tasks • {w.avgProgress}%</span>
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<BarChart3 className="h-5 w-5 text-primary" />
+					Monthly Report
+				</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<div className="space-y-3">
+					{weeks.map((w) => (
+						<div key={w.label} className="space-y-2 p-3 rounded-lg border bg-muted/30">
+							<div className="flex justify-between items-center">
+								<span className="font-medium text-sm">{w.label}</span>
+								<div className="flex items-center gap-2 text-xs text-muted-foreground">
+									<Calendar className="h-3 w-3" />
+									<span>{w.tasks} tasks • {w.avgProgress}%</span>
+								</div>
+							</div>
+							<Progress value={w.avgProgress} className="h-2" />
 						</div>
-						<div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-							<div className="h-full bg-emerald-500" style={{ width: `${w.avgProgress}%` }} />
-						</div>
-					</div>
-				))}
-			</div>
-		</div>
+					))}
+				</div>
+			</CardContent>
+		</Card>
 	)
 }
